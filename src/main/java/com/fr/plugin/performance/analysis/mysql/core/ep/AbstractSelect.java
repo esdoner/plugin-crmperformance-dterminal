@@ -3,6 +3,8 @@ package com.fr.plugin.performance.analysis.mysql.core.ep;
 import com.fr.plugin.performance.analysis.mysql.lang.Index;
 import com.fr.plugin.performance.analysis.mysql.lang.Table;
 
+import java.util.HashMap;
+
 /**
  * @author yuwh
  * @version 1.0.0
@@ -12,8 +14,9 @@ import com.fr.plugin.performance.analysis.mysql.lang.Table;
  * 2. 此类是 select 操作行的超类
  */
 public abstract class AbstractSelect {
-    private int treeOrder= -1;
-    protected static String SelectType= "";
+    private int treeOrder= 0;
+    private int childOrder= 0;
+    protected static String SelectTypeName= "";
     private Table table;
     private JoinType joinType= JoinType.NULL;
     private Index[] possibleIndex;
@@ -23,4 +26,15 @@ public abstract class AbstractSelect {
     private Long rows=0L;
     private ExtraHit[] extra;
 
+    public AbstractSelect(){}
+
+    public AbstractSelect(HashMap var){
+
+    }
+
+    public int getTreeOrder(){ return this.treeOrder; }
+
+    public int getChildOrder(){ return this.childOrder;}
+
+    public Table getTable(){ return this.table;}
 }

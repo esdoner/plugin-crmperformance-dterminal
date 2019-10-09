@@ -1,10 +1,9 @@
 package com.fr.plugin.performance.analysis.mysql.core.ep;
 
+import com.fr.decision.base.util.UUIDUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author yuwh
@@ -13,32 +12,60 @@ import java.util.List;
  * Description:none
  */
 public class Explain {
-    private List<AbstractSelect> selects;
+    private HashMap<Integer, AbstractSelect> selects= new HashMap<>();
 
     public Explain(List<HashMap> explain){
-        explain.forEach(s->{
-            selects.add(new AbstractSelect() {});
+        explain.forEach(l->{
+            AbstractSelect s= SelectFactory.buildSelect(l);
+            selects.put(s.getTreeOrder(), s);
         });
     }
 
-    public Tree getSelectTrack(){
+    public Tree getSelectTree(){
         return new Tree();
     }
 
     private class Tree implements Iterable<Branch>{
-        private HashMap<Integer, Branch> branches= new HashMap<>();
+        private HashMap<String, Branch> branches= new HashMap<>();
+
+        private Tree(){
+            selects.forEach(s->{
+                if(selects.get(s).getTreeOrder()== 1){
+                    branchOut(new Node<>(s));
+                } else {
+
+                }
+            });
+        }
+
+        private Branch branchOut(Node root){
+            return branches.put(UUIDUtil.generate(), new Branch(root));
+        }
 
         @NotNull
         @Override
         public Iterator<Branch> iterator() {
             return branches.values().iterator();
         }
+
+        public Branch[] getTrack(){
+            return null;
+        }
+
+        public void trackView(){}
     }
 
-    private abstract class Branch implements Iterable<Node>{
-        private Node[] nodes;
+    private class Branch implements Iterable<Node>{
+        private List<Node> nodes;
 
-        private Node getFirstNode(){ return nodes[0]; }
+        private Branch(Node root){
+            nodes= new ArrayList<>();
+            add(root);
+        }
+
+        private Node getFirstNode(){ return nodes.get(0); }
+
+        private void add(Node node){ nodes.add(node); }
 
         @NotNull
         @Override
@@ -52,8 +79,8 @@ public class Explain {
 
                 @Override
                 public Node next() {
-                    Node node= nodes[i];
-                    if(i>= nodes.length-1){
+                    Node node= nodes.get(i);
+                    if(i>= nodes.size()-1){
                         hasNext= false;
                     } else {
                         i++;
@@ -62,12 +89,14 @@ public class Explain {
                 }
 
                 @Override
-                public void remove() { nodes[i]= new Node(); }
+                public void remove() { nodes.set(i, new Node()); }
             };
         }
     }
 
     private class Node<S extends AbstractSelect>{
-        private S object;
+        private S select;
+
+        private Node(S var){ this.select= var;}
     }
 }
