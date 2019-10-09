@@ -29,11 +29,11 @@ public class Explain {
         private HashMap<String, Branch> branches= new HashMap<>();
 
         private Tree(){
-            selects.forEach(s->{
-                if(selects.get(s).getTreeOrder()== 1){
+            selects.forEach((i, s) ->{
+                if(s.getTreeOrder()== 1){
                     branchOut(new Node<>(s));
-                } else {
-
+                }
+                if(s.getTable().getName().matches("<derived\\d+>")){
                 }
             });
         }
@@ -89,13 +89,15 @@ public class Explain {
                 }
 
                 @Override
-                public void remove() { nodes.set(i, new Node()); }
+                public void remove() { nodes.set(i, new Node<>()); }
             };
         }
     }
 
     private class Node<S extends AbstractSelect>{
-        private S select;
+        private S select= null;
+
+        private Node(){}
 
         private Node(S var){ this.select= var;}
     }
