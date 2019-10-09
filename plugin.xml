@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<plugin>
+    <id>com.fr.plugin.crmperformance.dterminal</id>
+    <name><![CDATA[CRM性能d端]]></name>
+    <active>yes</active>
+    <version>1.0.0</version>
+    <env-version>10.0</env-version>
+    <jartime>2019-01-01</jartime>
+    <vendor>crm.yuwh</vendor>
+    <description><![CDATA[测试环境用性能插件]]></description>
+    <change-notes>
+        <![CDATA[[2019-08-01]初始化]]>
+    </change-notes>
+    <extra-core>
+        <LocaleFinder class="com.fr.plugin.performance.util.PerformanceLocaleFinder"/>
+        <FunctionDefineProvider class="com.fr.plugin.performance.execute.CommonExecutor" description="" name="simplexecutor"/>
+    </extra-core>
+    <extra-designer>
+    </extra-designer>
+    <function-recorder class="com.fr.plugin.performance.execute.CommonExecutor"/>
+</plugin>
