@@ -67,4 +67,8 @@ public enum JoinType {
         this.name= name;
         this.priority= priority;
     }
+
+    public static JoinType findIgnoreCase(String name){
+        return JoinType.valueOf(name.toUpperCase());
+    }
 }

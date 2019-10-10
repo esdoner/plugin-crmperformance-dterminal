@@ -1,8 +1,5 @@
 package com.fr.plugin.performance.analysis.mysql.core.ep;
 
-import com.fr.decision.base.util.UUIDUtil;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.*;
 
 /**
@@ -12,93 +9,79 @@ import java.util.*;
  * Description:none
  */
 public class Explain {
-    private HashMap<Integer, AbstractSelect> selects= new HashMap<>();
+    private HashMap<Integer, List<Node<AbstractSelect>>> selects= new HashMap<>();
+    private Tree selectTree;
 
     public Explain(List<HashMap> explain){
+        final int[] i = {0};
         explain.forEach(l->{
             AbstractSelect s= SelectFactory.buildSelect(l);
-            selects.put(s.getTreeOrder(), s);
+            int treeOrder= s.getTreeOrder();
+            if(selects.containsKey(treeOrder)){
+                List<Node<AbstractSelect>> selectNodeList= selects.get(treeOrder);
+                selectNodeList.add(new Node(s, i[0]));
+            } else {
+                List<Node<AbstractSelect>> selectNodeList= new ArrayList<>();
+                selectNodeList.add(new Node(s, i[0]));
+                selects.put(treeOrder, selectNodeList);
+            }
+            i[0]++;
         });
     }
 
-    public Tree getSelectTree(){
-        return new Tree();
-    }
+    public Tree getSelectTree(){ return selectTree== null? selectTree=new Tree(): selectTree; }
 
-    private class Tree implements Iterable<Branch>{
-        private HashMap<String, Branch> branches= new HashMap<>();
+    public String getTrackTree(){ return null;}
 
+    private class Tree{
         private Tree(){
-            selects.forEach((i, s) ->{
-                if(s.getTreeOrder()== 1){
-                    branchOut(new Node<>(s));
-                }
-                if(s.getTable().getName().matches("<derived\\d+>")){
-                }
-            });
-        }
-
-        private Branch branchOut(Node root){
-            return branches.put(UUIDUtil.generate(), new Branch(root));
-        }
-
-        @NotNull
-        @Override
-        public Iterator<Branch> iterator() {
-            return branches.values().iterator();
-        }
-
-        public Branch[] getTrack(){
-            return null;
-        }
-
-        public void trackView(){}
-    }
-
-    private class Branch implements Iterable<Node>{
-        private List<Node> nodes;
-
-        private Branch(Node root){
-            nodes= new ArrayList<>();
-            add(root);
-        }
-
-        private Node getFirstNode(){ return nodes.get(0); }
-
-        private void add(Node node){ nodes.add(node); }
-
-        @NotNull
-        @Override
-        public Iterator<Node> iterator() {
-            return new Iterator<Node>(){
-                int i= 0;
-                boolean hasNext= true;
-
-                @Override
-                public boolean hasNext() { return hasNext; }
-
-                @Override
-                public Node next() {
-                    Node node= nodes.get(i);
-                    if(i>= nodes.size()-1){
-                        hasNext= false;
-                    } else {
-                        i++;
+            selects.forEach((i, l)->{
+                l.forEach(n->{
+                    if(i== 1){
+                        n.setParentId(-1);
                     }
-                    return node;
-                }
-
-                @Override
-                public void remove() { nodes.set(i, new Node<>()); }
-            };
+                    if(!n.isEOFBranch()){
+                        selects.get(Integer.valueOf(n.getDeriveGroup())).forEach(c->{
+                            c.setParentId(n.getCurrentId());
+                        });
+                    }
+                });
+            });
         }
     }
 
     private class Node<S extends AbstractSelect>{
         private S select= null;
+        private int currentId;
+        private int parentId;
 
-        private Node(){}
+        private Node() {}
 
-        private Node(S var){ this.select= var;}
+        private Node(S var, int var1) {
+            this.select= var;
+            this.setCurrentId(var1);
+        }
+
+        public int getCurrentId() {
+            return currentId;
+        }
+
+        public void setCurrentId(int currentId) {
+            this.currentId = currentId;
+        }
+
+        public int getParentId() {
+            return parentId;
+        }
+
+        public void setParentId(int parentId) {
+            this.parentId = parentId;
+        }
+
+        private boolean isEOFBranch() { return !select.getTable().getName().matches("<derived\\d+>"); }
+
+        private String getDeriveGroup() {
+            return select.getTable().getName().replace("<derived","").replace(">","");
+        }
     }
 }
