@@ -1,12 +1,14 @@
 package com.fr.plugin.performance.analysis.mysql.core.ep;
 
+import com.fr.plugin.performance.analysis.mysql.core.IgnoreCase;
+
 /**
  * @author yuwh
  * @version 1.0.0
  * time:2019/9/30
  * Description:none
  */
-public enum JoinType {
+public enum JoinType implements IgnoreCase<JoinType> {
     /**
      * 全表扫描
      */
@@ -66,9 +68,5 @@ public enum JoinType {
     JoinType(String name, int priority){
         this.name= name;
         this.priority= priority;
-    }
-
-    public static JoinType findIgnoreCase(String name){
-        return JoinType.valueOf(name.toUpperCase());
     }
 }

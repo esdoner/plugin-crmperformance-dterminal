@@ -7,4 +7,7 @@ package com.fr.plugin.performance.analysis.mysql.core.ep;
  * Description:none
  */
 public class ExtraHit {
+    public ExtraHit(String Hit){
+
+    }
 }

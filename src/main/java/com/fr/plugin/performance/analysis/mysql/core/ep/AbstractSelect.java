@@ -1,9 +1,12 @@
 package com.fr.plugin.performance.analysis.mysql.core.ep;
 
+import com.fr.plugin.performance.analysis.mysql.core.IgnoreCase;
 import com.fr.plugin.performance.analysis.mysql.lang.Index;
 import com.fr.plugin.performance.analysis.mysql.lang.Table;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author yuwh
@@ -17,26 +20,24 @@ public class AbstractSelect {
     private int treeOrder= 0;
     private Table table;
     private JoinType joinType= JoinType.NULL;
-    private Index[] possibleIndex;
-    private Index[] index;
+    private List<Index> possibleIndex;
+    private Index index;
     private int keyLen;
     private String ref;
     private Long rows;
-    private ExtraHit[] extra;
+    private List<ExtraHit> extra;
 
     public AbstractSelect(){}
 
     public AbstractSelect(HashMap var){
         this.treeOrder= Integer.valueOf(var.get("id").toString());
         this.generateTable(var.get("table").toString());
-        this.joinType= JoinType.findIgnoreCase(var.get("type").toString());
-        /** TODO possibleIndex and index
-         * */
+        this.joinType= IgnoreCase.findInUpperCase(JoinType.class, var.get("type").toString());
+        this.generateIndex(var.get("possible_keys").toString(), var.get("key").toString());
         this.keyLen= Integer.valueOf(var.get("key_len").toString());
         this.ref= var.get("ref").toString();
         this.rows= Long.valueOf(var.get("rows").toString());
-        /** TODO extra
-         * */
+        this.generateExtra(var.get("Extra").toString());
     }
 
     private void generateTable(String var){
@@ -45,6 +46,25 @@ public class AbstractSelect {
          */
         this.table= new Table();
         this.table.setName(var);
+    }
+
+    private void generateIndex(String var1, String var2){
+        /**
+         * TODO something
+         */
+        Arrays.stream(var1.split(",")).forEach(i->{
+            possibleIndex.add(new Index(i));
+        });
+        index= new Index(var2);
+    }
+
+    private void generateExtra(String var){
+        /**
+         * TODO something
+         */
+        Arrays.stream(var.split(";")).forEach(e->{
+           extra.add(new ExtraHit(e));
+        });
     }
 
     public int getTreeOrder(){ return this.treeOrder; }
